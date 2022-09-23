@@ -1,24 +1,24 @@
 package ru.tekdata.manualcounter
 
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat.getSystemService
 import ru.tekdata.manualcounter.databinding.ActivityMainBinding
-import kotlin.random.Random
 
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
         const val NOTIFICATION_ID = 10111
-        const val CHANNEL_ID = "channelID121212_remm"
+        const val NOTIFICATION_CHANNEL_ID = "channelID121212_remm"
+        const val NOTIFICATION_CHANNEL_NAME_TEKDATA = "channelID121212_remm"
     }
 
 
@@ -27,11 +27,17 @@ class MainActivity : AppCompatActivity() {
         val binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-
         val prefs = getSharedPreferences("tekdata_ru", Context.MODE_PRIVATE)
-
-
         prefs.getString("tekdata_manual_counter", "0")?.let { binding.editText.setText(it) }
+
+        //Работаем с уведомлениями+
+//        val intent = Intent(this, MainActivity::class.java)
+//        intent.apply {
+//            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+//        }
+//        val pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
+        //Работаем с уведомлениями-
+
 
 
 
@@ -47,9 +53,21 @@ class MainActivity : AppCompatActivity() {
 
                 }
 
-            // Создаём уведомление
-            val notif = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_stat_name)
+            // Создаём уведомление+
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val name = NOTIFICATION_CHANNEL_NAME_TEKDATA
+                val descriptionText = NOTIFICATION_CHANNEL_NAME_TEKDATA
+                val importance = NotificationManager.IMPORTANCE_DEFAULT
+                val channel = NotificationChannel(NOTIFICATION_CHANNEL_ID, name, importance).apply {
+                    description = descriptionText
+                }
+                val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                manager.createNotificationChannel(channel)
+            }
+
+            val notif = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_baseline_back_hand_24)
                 .setContentTitle("Напоминание")
                 .setContentText("Пора покормить кота")
                 .setAutoCancel(true)
@@ -64,6 +82,8 @@ class MainActivity : AppCompatActivity() {
 //            with(NotificationManagerCompat.from(this)) {
 //                notify(NOTIFICATION_ID, builder.build()) // посылаем уведомление
 //            }
+
+            // Создаём уведомление-
 
         }
 
