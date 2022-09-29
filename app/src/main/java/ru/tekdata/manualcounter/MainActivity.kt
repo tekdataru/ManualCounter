@@ -1,12 +1,16 @@
 package ru.tekdata.manualcounter
 
+import android.R.attr.value
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.widget.RemoteViews
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -30,14 +34,6 @@ class MainActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("tekdata_ru", Context.MODE_PRIVATE)
         prefs.getString("tekdata_manual_counter", "0")?.let { binding.editText.setText(it) }
 
-        //Работаем с уведомлениями+
-//        val intent = Intent(this, MainActivity::class.java)
-//        intent.apply {
-//            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-//        }
-//        val pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
-        //Работаем с уведомлениями-
-
 
 
 
@@ -46,15 +42,26 @@ class MainActivity : AppCompatActivity() {
             val buf = binding.editText.text.toString().toInt() + 1
             binding.editText.setText(buf.toString())
 
-
                 prefs.edit().apply{
                     putString("tekdata_manual_counter", buf.toString())
                     commit()
-
                 }
 
-            // Создаём уведомление+
 
+            //Работаем с уведомлениями+
+            val intent = Intent(this, AfterNotification1::class.java)
+            intent.apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                //Toast.makeText(this@MainActivity, "adfasdf", Toast.LENGTH_LONG).show()
+            }
+
+            val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+
+            val contentView = RemoteViews(packageName, R.layout.activity_after_notification1)
+            //Работаем с уведомлениями-
+
+
+            // Создаём уведомление+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val name = NOTIFICATION_CHANNEL_NAME_TEKDATA
                 val descriptionText = NOTIFICATION_CHANNEL_NAME_TEKDATA
@@ -68,10 +75,12 @@ class MainActivity : AppCompatActivity() {
 
             val notif = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_baseline_back_hand_24)
-                .setContentTitle("Напоминание")
-                .setContentText("Пора покормить кота")
+                //.setContent(contentView)
+                //.setContentTitle("Напоминание")
+                //.setContentText("Пора покормить кота")
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
                 .build()
 
             val notificationManager = NotificationManagerCompat.from(this)
